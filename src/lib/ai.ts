@@ -127,6 +127,7 @@ export async function analyzeCompatibility(
   const prompt = `당신은 한국 사주명리학 전문가입니다. 반드시 한국어로만 답변하세요. 백틱 없이 순수 JSON만 반환하세요.
 
 두 사람의 사주 궁합을 아래 정보를 바탕으로 상세하게 분석해주세요.
+중요: 답변에서 절대로 "A", "B" 라고 표현하지 말고 반드시 실제 닉네임인 "${charA.nickname}"과 "${charB.nickname}"을 사용하세요.
 
 캐릭터 A: ${charA.nickname} / 일간 ${charA.dayMaster} / 일주 ${charA.dayPillar} / ${charA.classNameKr}
 오행 스탯 A: 목${charA.stats.wood} 화${charA.stats.fire} 토${charA.stats.earth} 금${charA.stats.metal} 수${charA.stats.water}
@@ -141,10 +142,10 @@ ${compatSummary}
   "score": ${compatResult?.score ?? 50},
   "partyType": "소울메이트/천생연분/최강전우/좋은동료/라이벌/동반자 중 하나",
   "summary": "두 사람 관계를 자연 비유로 한 문장 핵심 요약 (예: 불꽃과 나무처럼 서로를 키워주는 관계)",
-  "analysis": "두 사람이 어떤 관계인지, 함께하면 어떤 시너지가 나는지 3~4문장 MZ 감성 친근한 말투로",
-  "complementary": "A가 B에게 보완해주는 점과 B가 A에게 채워주는 점 구체적으로 2문장",
-  "challenge": "함께할 때 주의할 갈등 요소 1~2문장",
-  "elementSynergy": "두 사람 오행 관계를 자연 비유로 설명 (예: 나무가 불을 키우듯 A의 창의력이 B의 열정에 불을 붙여요)",
+  "analysis": "두 사람이 어떤 관계인지 3~4문장. 반드시 A나 B 대신 실제 닉네임 ${charA.nickname}과 ${charB.nickname}을 사용",
+  "complementary": "${charA.nickname}이 ${charB.nickname}에게 보완해주는 점과 ${charB.nickname}이 ${charA.nickname}에게 채워주는 점 2문장",
+  "challenge": "${charA.nickname}과 ${charB.nickname}이 함께할 때 주의할 점 1~2문장",
+  "elementSynergy": "두 사람 오행 관계를 자연 비유로 설명. 반드시 A나 B 대신 실제 닉네임 ${charA.nickname}과 ${charB.nickname}을 사용해서 작성",
   "tip": "이 파티가 더 잘 맞으려면 실천할 수 있는 구체적 조언 1문장"
 }`
 
