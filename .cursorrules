@@ -1,0 +1,21 @@
+# 운명길드 (UnMyeong Guild) 프로젝트 룰
+
+## 기술 스택
+- Next.js 14 App Router + TypeScript
+- Tailwind CSS + Framer Motion
+- Supabase (DB + Auth)
+- Anthropic Claude API (claude-sonnet-4-6)
+- Zustand (상태관리)
+
+## 코딩 규칙
+- 모든 컴포넌트는 TypeScript 타입 명시
+- Claude API는 반드시 서버사이드(API Routes)에서만 호출
+- API 키는 절대 클라이언트 코드에 노출 금지
+- 컴포넌트 상단에 'use client' 명시 필요시만 사용
+- 한국어 사주 RPG 서비스임을 항상 고려
+
+## 서비스 개념
+- 사주팔자 입력 → RPG 캐릭터 생성
+- 오행(목화토금수) → RPG 스탯(AGI/ATK/DEF/INT/MP)
+- 일간(십천간) → 직업 클래스 (전사/마법사/힐러 등)
+- 친구 초대 → 파티 궁합 분석
