@@ -1,10 +1,54 @@
+# 🏰 운명길드 (UnMyeong Guild)
+
+> **당신의 팔자로 파티를 결성하라**
+> 사주 × RPG × 궁합 서비스
+
+---
+
+## ✨ 서비스 소개
+
+**운명길드**는 사주팔자를 RPG 캐릭터로 변환하고, 친구와 파티를 맺어 궁합을 분석하는 서비스예요.
+
+- 🔮 **만세력 기반** 정확한 사주 계산
+- ⚔️ **10가지 운명 클래스** (십천간 기반)
+- 📊 **오행 → RPG 스탯** 변환 시스템
+- 🏰 **파티 결성** & 친구 초대 코드
+- 💫 **AI 궁합 분석** (오행 상생·상극)
+
+---
+
+## 🎮 운명 클래스
+
+| 일간 | 클래스 | 특징 |
+|------|--------|------|
+| 甲木 | ⚔️ 전사 Warrior | 강인한 리더십 |
+| 乙木 | 🏹 레인저 Ranger | 유연한 적응력 |
+| 丙火 | 🔮 마법사 Mage | 폭발적 카리스마 |
+| 丁火 | 💚 힐러 Healer | 따뜻한 치유력 |
+| 戊土 | 🛡️ 나이트 Knight | 묵직한 안정감 |
+| 己土 | 📜 세이지 Sage | 깊은 지혜 |
+| 庚金 | 🪓 버서커 Berserker | 폭발적 결단력 |
+| 辛金 | 🗡️ 어쌔신 Assassin | 예리한 완벽주의 |
+| 壬水 | 🌊 소서러 Sorcerer | 신비로운 직관 |
+| 癸水 | ⚡ 위자드 Wizard | 섬세한 감수성 |
+
+---
+
+## 📊 오행 스탯 시스템
+
+- 목(木) → AGI 민첩 — 성장·유연성·적응력
+- 화(火) → ATK 공격력 — 열정·추진력·카리스마
+- 토(土) → DEF 방어력 — 안정·포용력·신뢰감
+- 금(金) → INT 지능 — 결단·분석력·완벽주의
+- 수(水) → MP 마나 — 직관·창의력·감수성
+
 ---
 
 ## 🛠️ 기술 스택
 
 | 분류 | 기술 |
 |------|------|
-| Frontend | Next.js 14 (App Router), TypeScript, Tailwind CSS, Framer Motion |
+| Frontend | Next.js 14, TypeScript, Tailwind CSS, Framer Motion |
 | Backend | Next.js API Routes |
 | Database | Supabase (PostgreSQL) |
 | AI | Groq API (llama-3.3-70b) |
@@ -16,76 +60,46 @@
 
 ## 🚀 로컬 실행
 
-```bash
-# 저장소 클론
-git clone https://github.com/ssongkim03/unmyeong-guild.git
-cd unmyeong-guild
+1. 저장소 클론
 
-# 패키지 설치
-npm install
+       git clone https://github.com/ssongkim03/unmyeong-guild.git
+       cd unmyeong-guild
 
-# 환경변수 설정
-cp .env.example .env.local
-# .env.local 파일에 키 입력
+2. 패키지 설치
 
-# 개발 서버 실행
-npm run dev
-```
+       npm install
 
----
+3. 환경변수 설정 — .env.local 파일 생성 후 아래 값 입력
 
-## 🔑 환경변수
+       NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+       NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+       SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+       GROQ_API_KEY=your_groq_api_key
 
-`.env.local` 파일을 생성하고 아래 값을 입력하세요:
+4. 개발 서버 실행
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-GROQ_API_KEY=your_groq_api_key
-```
+       npm run dev
 
 ---
 
 ## 📁 프로젝트 구조
 
-src/
-
-├── app/
-
-│   ├── page.tsx           # 랜딩페이지
-
-│   ├── create/page.tsx    # 캐릭터 생성
-
-│   ├── character/page.tsx # 내 캐릭터
-
-│   ├── party/page.tsx     # 파티 시스템
-
-│   └── api/
-
-│       ├── characters/    # 캐릭터 API
-
-│       ├── compatibility/ # 궁합 분석 API
-
-│       └── parties/       # 파티 API
-
-├── components/
-
-├── lib/
-
-│   ├── saju.ts           # 만세력 사주 계산
-
-│   ├── ai.ts             # Groq AI 연동
-
-│   └── supabase.ts       # DB 연동
-
-├── store/
-
-│   └── characterStore.ts # 캐릭터 상태관리
-
-└── types/
-
-└── index.ts          # TypeScript 타입
+    src/
+    ├── app/
+    │   ├── page.tsx           # 랜딩페이지
+    │   ├── create/page.tsx    # 캐릭터 생성
+    │   ├── character/page.tsx # 내 캐릭터
+    │   ├── party/page.tsx     # 파티 시스템
+    │   └── api/
+    │       ├── characters/    # 캐릭터 API
+    │       ├── compatibility/ # 궁합 분석 API
+    │       └── parties/       # 파티 API
+    ├── lib/
+    │   ├── saju.ts            # 만세력 사주 계산
+    │   ├── ai.ts              # Groq AI 연동
+    │   └── supabase.ts        # DB 연동
+    └── types/
+        └── index.ts           # TypeScript 타입
 
 ---
 
@@ -110,6 +124,4 @@ MIT License
 
 ---
 
-<p align="center">
-  🏰 <strong>운명길드</strong> — 당신의 팔자로 파티를 결성하라
-</p>
+🏰 **운명길드** — 당신의 팔자로 파티를 결성하라
