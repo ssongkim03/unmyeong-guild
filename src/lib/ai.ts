@@ -7,7 +7,7 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
 })
 
-const MODEL = 'llama-3.3-70b-versatile'
+const MODEL = 'llama-3.1-8b-instant'
 
 type SajuAnalysisResult = {
   dayMaster: string
@@ -58,7 +58,7 @@ export async function analyzeSaju(form: SajuFormData): Promise<SajuAnalysisResul
   const response = await groq.chat.completions.create({
     model: MODEL,
     messages: [
-      { role: 'system', content: '당신은 한국 사주명리학 전문가입니다. 반드시 한국어로만 답변하세요.' },
+      { role: 'system', content: '당신은 한국 사주명리학 전문가입니다. 모든 답변은 100% 순수 한국어로만 작성하세요. 영어, 한자, 일본어, 베트남어 등 어떤 외국어도 절대 사용하지 마세요. 한국어 단어가 생각나지 않아도 반드시 한국어로만 표현하세요.' },
       { role: 'user', content: prompt }
     ],
     max_tokens: 600,
