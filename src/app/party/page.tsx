@@ -31,28 +31,19 @@ export default function PartyPage() {
   const { myCharacter } = useCharacterStore()
 
   const [tab, setTab] = useState<'find' | 'create' | 'join'>('find')
-
-  // 궁합 보기
   const [shareCode, setShareCode] = useState('')
   const [foundChar, setFoundChar] = useState<any>(null)
   const [compatibility, setCompatibility] = useState<any>(null)
-
-  // 파티 만들기
   const [partyName, setPartyName] = useState('')
   const [createdParty, setCreatedParty] = useState<any>(null)
-
-  // 파티 참가
   const [inviteCode, setInviteCode] = useState('')
   const [joinedParty, setJoinedParty] = useState<any>(null)
   const [partyMembers, setPartyMembers] = useState<any[]>([])
   const [partyCompatibilities, setPartyCompatibilities] = useState<any[]>([])
-
-  // 공통
   const [loading, setLoading] = useState(false)
   const [loadingMsg, setLoadingMsg] = useState('')
   const [error, setError] = useState('')
 
-  // 친구 캐릭터 검색
   async function searchCharacter() {
     if (!shareCode.trim()) { setError('공유 코드를 입력해주세요'); return }
     if (!myCharacter) { setError('먼저 내 캐릭터를 만들어주세요'); return }
@@ -71,7 +62,6 @@ export default function PartyPage() {
     }
   }
 
-  // 1:1 궁합 분석
   async function analyzeCompatibility() {
     if (!myCharacter || !foundChar) return
     setLoading(true)
@@ -100,7 +90,6 @@ export default function PartyPage() {
     }
   }
 
-  // 파티 생성
   async function createParty() {
     if (!partyName.trim()) { setError('파티명을 입력해주세요'); return }
     if (!myCharacter) { setError('먼저 내 캐릭터를 만들어주세요'); return }
@@ -123,13 +112,11 @@ export default function PartyPage() {
     }
   }
 
-  // 파티 참가
   async function joinParty() {
     if (!inviteCode.trim()) { setError('초대 코드를 입력해주세요'); return }
     if (!myCharacter) { setError('먼저 내 캐릭터를 만들어주세요'); return }
     setError('')
     setLoading(true)
-
     const msgs = ['파티 참가 중...', '파티원 궁합 분석 중...', '오행 상성 계산 중...', '천간합·지지합 확인 중...']
     let idx = 0
     setLoadingMsg(msgs[0])
@@ -137,7 +124,6 @@ export default function PartyPage() {
       idx = (idx + 1) % msgs.length
       setLoadingMsg(msgs[idx])
     }, 1500)
-
     try {
       const res = await fetch('/api/parties', {
         method: 'PATCH',
@@ -176,44 +162,126 @@ export default function PartyPage() {
     return { grade: 'D', label: '라이벌', color: '#e85a4f' }
   }
 
+  // 궁합 결과 카드 공통 컴포넌트
+  function CompatibilityCard({ compat, charA, charB }: { compat: any; charA: any; charB: any }) {
+    const grade = compat.grade || getGrade(compat.score).grade
+    const label = compat.label || getGrade(compat.score).label
+    const gradeColor = getGradeColor(grade)
+
+    return (
+      <div className="space-y-3">
+        {/* 점수 헤더 */}
+        <div className="p-5 rounded-2xl border text-center" style={{ background: `${gradeColor}12`, borderColor: `${gradeColor}30` }}>
+          <div className="flex items-center justify-center gap-4 mb-3">
+            <div className="text-center">
+              <div className="text-2xl mb-1">{CLASS_INFO[charA?.character_class]?.icon}</div>
+              <p className="text-xs text-white/40">{charA?.nickname}</p>
+            </div>
+            <div>
+              <div className="text-4xl font-black" style={{ color: gradeColor }}>{grade}</div>
+              <div className="text-2xl font-bold" style={{ color: gradeColor }}>{compat.score}점</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl mb-1">{CLASS_INFO[charB?.character_class]?.icon}</div>
+              <p className="text-xs text-white/40">{charB?.nickname}</p>
+            </div>
+          </div>
+          <div className="inline-block text-xs rounded-full px-4 py-1.5 font-medium"
+            style={{ background: `${gradeColor}20`, color: gradeColor }}>
+            {label} · {compat.party_type || compat.partyType}
+          </div>
+          {compat.summary && (
+            <p className="text-white/70 text-sm mt-3 font-medium">✨ {compat.summary}</p>
+          )}
+        </div>
+
+        {/* 명리학 분석 */}
+        {compat.details?.length > 0 && (
+          <div className="p-4 rounded-2xl bg-white/3 border border-white/8">
+            <p className="text-xs text-white/30 tracking-widest uppercase mb-3">☯️ 명리학 분석</p>
+            <div className="space-y-1.5">
+              {compat.details.map((d: string, i: number) => (
+                <p key={i} className="text-sm text-white/60 leading-relaxed">{d}</p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 궁합 해설 */}
+        {compat.analysis && (
+          <div className="p-4 rounded-2xl bg-white/3 border border-white/8">
+            <p className="text-xs text-white/30 tracking-widest uppercase mb-3">💬 궁합 해설</p>
+            <p className="text-white/70 text-sm leading-relaxed">{compat.analysis}</p>
+          </div>
+        )}
+
+        {/* 서로 보완하는 점 */}
+        {compat.complementary && (
+          <div className="p-4 rounded-2xl bg-blue-900/15 border border-blue-500/20">
+            <p className="text-xs text-blue-400 tracking-widest uppercase mb-3">🤝 서로 보완하는 점</p>
+            <p className="text-white/70 text-sm leading-relaxed">{compat.complementary}</p>
+          </div>
+        )}
+
+        {/* 오행 상성 */}
+        {compat.element_synergy || compat.elementSynergy ? (
+          <div className="p-4 rounded-2xl bg-white/3 border border-white/8">
+            <p className="text-xs text-white/30 tracking-widest uppercase mb-3">🌿 오행 상성</p>
+            <p className="text-white/70 text-sm leading-relaxed">
+              {compat.element_synergy || compat.elementSynergy}
+            </p>
+          </div>
+        ) : null}
+
+        {/* 주의할 점 */}
+        {compat.challenge && (
+          <div className="p-4 rounded-2xl bg-red-900/10 border border-red-500/20">
+            <p className="text-xs text-red-400 tracking-widest uppercase mb-3">⚠️ 주의할 점</p>
+            <p className="text-white/60 text-sm leading-relaxed">{compat.challenge}</p>
+          </div>
+        )}
+
+        {/* 파티 팁 */}
+        {compat.tip && (
+          <div className="p-4 rounded-2xl bg-purple-900/20 border border-purple-500/20">
+            <p className="text-xs text-purple-400 tracking-widest uppercase mb-2">💡 파티 팁</p>
+            <p className="text-white/70 text-sm leading-relaxed">{compat.tip}</p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <main className="min-h-screen bg-[#0d0d1a] text-white px-4 py-8">
       <div className="max-w-lg mx-auto">
 
-        {/* 헤더 */}
         <div className="flex items-center gap-3 mb-8">
           <button onClick={() => router.push('/')} className="text-white/40 hover:text-white transition-colors">←</button>
           <h1 className="text-xl font-bold text-purple-300">🏰 파티 시스템</h1>
         </div>
 
-        {/* 캐릭터 없을 때 */}
         {!myCharacter && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="p-6 rounded-2xl bg-yellow-900/20 border border-yellow-500/30 mb-6 text-center"
           >
             <p className="text-yellow-300 font-semibold mb-2">⚠️ 캐릭터가 없어요</p>
             <p className="text-white/50 text-sm mb-4">파티 기능을 사용하려면 먼저 캐릭터를 만들어주세요</p>
-            <button
-              onClick={() => router.push('/create')}
+            <button onClick={() => router.push('/create')}
               className="px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-semibold text-sm"
             >캐릭터 만들기</button>
           </motion.div>
         )}
 
-        {/* 내 캐릭터 미니 카드 */}
         {myCharacter && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="p-4 rounded-2xl bg-white/5 border border-white/10 mb-6 flex items-center gap-4"
           >
             <div className="text-3xl">{CLASS_INFO[myCharacter.character_class]?.icon}</div>
             <div className="flex-1">
               <p className="text-xs text-white/40 mb-0.5">{myCharacter.day_master} · {myCharacter.class_name_kr}</p>
               <p className="font-bold text-white">{myCharacter.nickname}</p>
-              {myCharacter.pillars && (
-                <p className="text-[10px] text-white/20 font-mono mt-0.5">{myCharacter.pillars}</p>
-              )}
+              {myCharacter.pillars && <p className="text-[10px] text-white/20 font-mono mt-0.5">{myCharacter.pillars}</p>}
             </div>
             <div className="text-xs font-mono text-purple-300 bg-purple-900/30 border border-purple-500/30 rounded-lg px-3 py-1.5">
               {myCharacter.share_code}
@@ -221,15 +289,13 @@ export default function PartyPage() {
           </motion.div>
         )}
 
-        {/* 탭 */}
         <div className="grid grid-cols-3 gap-2 mb-6">
           {([
             { key: 'find',   label: '🔍 궁합 보기' },
             { key: 'create', label: '✨ 파티 만들기' },
             { key: 'join',   label: '🚪 파티 참가' },
           ] as const).map(t => (
-            <button
-              key={t.key}
+            <button key={t.key}
               onClick={() => { setTab(t.key); setError(''); setFoundChar(null); setCompatibility(null) }}
               className={`py-2.5 rounded-xl text-sm font-medium transition-all ${
                 tab === t.key
@@ -242,7 +308,7 @@ export default function PartyPage() {
 
         <AnimatePresence mode="wait">
 
-          {/* ── 궁합 보기 탭 ── */}
+          {/* 궁합 보기 탭 */}
           {tab === 'find' && (
             <motion.div key="find" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
 
@@ -258,9 +324,7 @@ export default function PartyPage() {
                       maxLength={6}
                       className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 font-mono tracking-widest focus:outline-none focus:border-purple-500 uppercase"
                     />
-                    <button
-                      onClick={searchCharacter}
-                      disabled={loading}
+                    <button onClick={searchCharacter} disabled={loading}
                       className="px-5 py-3 bg-purple-600 rounded-xl font-medium disabled:opacity-50"
                     >검색</button>
                   </div>
@@ -279,11 +343,9 @@ export default function PartyPage() {
                 </div>
               )}
 
-              {/* 찾은 캐릭터 */}
               {foundChar && !compatibility && !loading && (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
-                  <div
-                    className="p-5 rounded-2xl border text-center"
+                  <div className="p-5 rounded-2xl border text-center"
                     style={{
                       background: `${CLASS_INFO[foundChar.character_class]?.color}12`,
                       borderColor: `${CLASS_INFO[foundChar.character_class]?.color}30`,
@@ -325,71 +387,30 @@ export default function PartyPage() {
                     </div>
                   )}
 
-                  <motion.button
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                     onClick={analyzeCompatibility}
                     className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-lg"
                   >💫 궁합 분석하기</motion.button>
                 </motion.div>
               )}
 
-              {/* 궁합 결과 */}
-              {compatibility && !loading && (() => {
-                const grade = getGrade(compatibility.score)
-                return (
-                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
-                    <div className="p-6 rounded-2xl border text-center" style={{ background: `${grade.color}12`, borderColor: `${grade.color}30` }}>
-                      <div className="flex items-center justify-center gap-4 mb-3">
-                        <span className="text-3xl">{CLASS_INFO[myCharacter?.character_class ?? '']?.icon}</span>
-                        <div className="text-4xl font-black" style={{ color: grade.color }}>{grade.grade}</div>
-                        <span className="text-3xl">{CLASS_INFO[foundChar?.character_class ?? '']?.icon}</span>
-                      </div>
-                      <div className="text-xl font-bold text-white mb-1">{grade.label}</div>
-                      <div className="text-4xl font-black mb-2" style={{ color: grade.color }}>{compatibility.score}점</div>
-                      <div className="inline-block text-xs bg-white/10 rounded-full px-4 py-1.5 text-white/60">{compatibility.party_type}</div>
-                    </div>
-
-                    {compatibility.details?.length > 0 && (
-                      <div className="p-5 rounded-2xl bg-white/3 border border-white/8">
-                        <p className="text-xs text-white/40 tracking-widest uppercase mb-3">☯️ 명리학 분석</p>
-                        <div className="space-y-2">
-                          {compatibility.details.map((d: string, i: number) => (
-                            <p key={i} className="text-sm text-white/70 leading-relaxed">{d}</p>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8">
-                      <p className="text-xs text-white/40 tracking-widest uppercase mb-3">💬 궁합 해설</p>
-                      <p className="text-white/70 text-sm leading-relaxed">{compatibility.analysis}</p>
-                    </div>
-
-                    {compatibility.element_synergy && (
-                      <div className="p-5 rounded-2xl bg-white/3 border border-white/8">
-                        <p className="text-xs text-white/40 tracking-widest uppercase mb-3">🌿 오행 상성</p>
-                        <p className="text-white/70 text-sm leading-relaxed">{compatibility.element_synergy}</p>
-                      </div>
-                    )}
-
-                    {compatibility.tip && (
-                      <div className="p-4 rounded-2xl bg-purple-900/20 border border-purple-500/20">
-                        <p className="text-xs text-purple-400 tracking-widest uppercase mb-2">💡 파티 팁</p>
-                        <p className="text-white/70 text-sm leading-relaxed">{compatibility.tip}</p>
-                      </div>
-                    )}
-
-                    <button
-                      onClick={() => { setFoundChar(null); setCompatibility(null); setShareCode('') }}
-                      className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white/50 text-sm"
-                    >🔄 다른 친구 검색</button>
-                  </motion.div>
-                )
-              })()}
+              {compatibility && !loading && (
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
+                  <CompatibilityCard
+                    compat={compatibility}
+                    charA={myCharacter}
+                    charB={foundChar}
+                  />
+                  <button
+                    onClick={() => { setFoundChar(null); setCompatibility(null); setShareCode('') }}
+                    className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white/50 text-sm"
+                  >🔄 다른 친구 검색</button>
+                </motion.div>
+              )}
             </motion.div>
           )}
 
-          {/* ── 파티 만들기 탭 ── */}
+          {/* 파티 만들기 탭 */}
           {tab === 'create' && (
             <motion.div key="create" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
               {!createdParty ? (
@@ -403,10 +424,8 @@ export default function PartyPage() {
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-purple-500"
                   />
                   {error && <p className="text-red-400 text-sm">{error}</p>}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    onClick={createParty}
-                    disabled={loading}
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={createParty} disabled={loading}
                     className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold disabled:opacity-50"
                   >{loading ? '생성 중...' : '✨ 파티 만들기'}</motion.button>
                 </div>
@@ -422,8 +441,7 @@ export default function PartyPage() {
                       className="px-6 py-2.5 bg-purple-600/30 border border-purple-500/40 rounded-xl text-purple-300 text-sm"
                     >📋 코드 복사</button>
                   </div>
-                  <button
-                    onClick={() => setCreatedParty(null)}
+                  <button onClick={() => setCreatedParty(null)}
                     className="w-full py-3 bg-white/5 border border-white/10 rounded-xl text-white/50 text-sm"
                   >🔄 새 파티 만들기</button>
                 </motion.div>
@@ -431,7 +449,7 @@ export default function PartyPage() {
             </motion.div>
           )}
 
-          {/* ── 파티 참가 탭 ── */}
+          {/* 파티 참가 탭 */}
           {tab === 'join' && (
             <motion.div key="join" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-4">
               {!joinedParty ? (
@@ -445,17 +463,14 @@ export default function PartyPage() {
                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 font-mono tracking-widest focus:outline-none focus:border-purple-500 uppercase"
                   />
                   {error && <p className="text-red-400 text-sm">{error}</p>}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-                    onClick={joinParty}
-                    disabled={loading}
+                  <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+                    onClick={joinParty} disabled={loading}
                     className="w-full py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold disabled:opacity-50"
                   >{loading ? loadingMsg : '🚪 파티 참가하기'}</motion.button>
                 </div>
               ) : (
                 <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4">
 
-                  {/* 참가 완료 */}
                   <div className="p-5 rounded-2xl bg-green-900/20 border border-green-500/30 text-center">
                     <p className="text-green-300 font-bold text-lg mb-1">🎉 {joinedParty.name} 참가 완료!</p>
                     <p className="text-white/40 text-sm">파티에 합류했어요</p>
@@ -493,49 +508,15 @@ export default function PartyPage() {
 
                   {/* 파티원 궁합 분석 */}
                   {partyCompatibilities.length > 0 && (
-                    <div className="p-5 rounded-2xl bg-white/3 border border-white/8 space-y-4">
-                      <p className="text-xs text-white/40 tracking-widest uppercase">💫 파티원 궁합 분석</p>
+                    <div className="space-y-4">
+                      <p className="text-xs text-white/40 tracking-widest uppercase px-1">💫 파티원 궁합 분석</p>
                       {partyCompatibilities.map((compat: any, i: number) => {
                         const charA = partyMembers.find((m: any) => m.characters?.id === compat.character_a)?.characters
                         const charB = partyMembers.find((m: any) => m.characters?.id === compat.character_b)?.characters
                         if (!charA || !charB) return null
-                        const gradeColor = getGradeColor(compat.grade)
                         return (
-                          <div key={i} className="p-4 rounded-xl border" style={{ borderColor: `${gradeColor}30`, background: `${gradeColor}08` }}>
-                            {/* 두 캐릭터 + 점수 */}
-                            <div className="flex items-center gap-2 mb-3">
-                              <span className="text-xl">{CLASS_INFO[charA.character_class]?.icon}</span>
-                              <span className="text-sm text-white/70 font-medium">{charA.nickname}</span>
-                              <span className="text-white/20 text-xs mx-1">vs</span>
-                              <span className="text-xl">{CLASS_INFO[charB.character_class]?.icon}</span>
-                              <span className="text-sm text-white/70 font-medium">{charB.nickname}</span>
-                              <div className="ml-auto flex items-center gap-2">
-                                <span className="font-black text-xl" style={{ color: gradeColor }}>{compat.grade}</span>
-                                <span className="text-sm font-bold" style={{ color: gradeColor }}>{compat.score}점</span>
-                              </div>
-                            </div>
-
-                            {/* 등급 라벨 */}
-                            <div className="inline-block text-xs rounded-full px-3 py-0.5 mb-3 font-medium"
-                              style={{ background: `${gradeColor}20`, color: gradeColor }}>
-                              {compat.label}
-                            </div>
-
-                            {/* 명리학 분석 */}
-                            {compat.details?.length > 0 && (
-                              <div className="space-y-1 mb-3">
-                                {compat.details.map((d: string, j: number) => (
-                                  <p key={j} className="text-xs text-white/50 leading-relaxed">{d}</p>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* AI 해설 */}
-                            {compat.analysis && (
-                              <p className="text-xs text-white/60 leading-relaxed border-t border-white/5 pt-2">
-                                {compat.analysis}
-                              </p>
-                            )}
+                          <div key={i} className="p-4 rounded-2xl bg-white/3 border border-white/8">
+                            <CompatibilityCard compat={compat} charA={charA} charB={charB} />
                           </div>
                         )
                       })}
