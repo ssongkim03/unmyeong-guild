@@ -354,7 +354,6 @@ export default function PartyPage() {
                     <div className="text-4xl mb-2">{CLASS_INFO[foundChar.character_class]?.icon}</div>
                     <p className="text-xs text-white/40 mb-1">{foundChar.day_master} · {foundChar.class_name_kr}</p>
                     <p className="font-bold text-lg text-white mb-1">{foundChar.nickname}</p>
-                    <p className="text-xs text-white/30 mb-1">{foundChar.birth_year}년 {foundChar.birth_month}월 {foundChar.birth_day}일생</p>
                     {foundChar.pillars && <p className="text-[10px] text-white/20 font-mono">{foundChar.pillars}</p>}
                   </div>
 
