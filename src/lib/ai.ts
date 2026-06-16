@@ -7,7 +7,7 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY!,
 })
 
-const MODEL = 'meta-llama/llama-4-maverick-17b-128e-instruct'
+const MODEL = 'llama-3.3-70b-versatile'
 
 type SajuAnalysisResult = {
   dayMaster: string
