@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const charA = characters.find(c => c.id === characterAId)!
     const charB = characters.find(c => c.id === characterBId)!
 
-    // 이미 분석된 궁합 있으면 캐시 반환
+    // 캐시된 궁합 확인
     const { data: cached } = await supabase
       .from('compatibility_results')
       .select('*')
@@ -45,11 +45,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, result: cached, cached: true })
     }
 
-    // AI로 궁합 분석
+    // 천간합·지지합·충·형·삼합 + AI 궁합 분석
     const analysis = await analyzeCompatibility(
       {
         nickname: charA.nickname,
         dayMaster: charA.day_master,
+        dayPillar: charA.day_pillar ?? '',
         stats: {
           wood: charA.stat_wood,
           fire: charA.stat_fire,
@@ -58,10 +59,12 @@ export async function POST(request: NextRequest) {
           water: charA.stat_water,
         },
         classNameKr: charA.class_name_kr,
+        compatibilityData: charA.compatibility_data ?? undefined,
       },
       {
         nickname: charB.nickname,
         dayMaster: charB.day_master,
+        dayPillar: charB.day_pillar ?? '',
         stats: {
           wood: charB.stat_wood,
           fire: charB.stat_fire,
@@ -70,6 +73,7 @@ export async function POST(request: NextRequest) {
           water: charB.stat_water,
         },
         classNameKr: charB.class_name_kr,
+        compatibilityData: charB.compatibility_data ?? undefined,
       }
     )
 
@@ -89,7 +93,18 @@ export async function POST(request: NextRequest) {
 
     if (insertError) throw insertError
 
-    return NextResponse.json({ success: true, result, cached: false })
+    // 상세 분석 결과 합쳐서 반환
+    return NextResponse.json({
+      success: true,
+      result: {
+        ...result,
+        grade: analysis.grade,
+        label: analysis.label,
+        details: analysis.details,
+        tip: analysis.tip,
+      },
+      cached: false,
+    })
   } catch (err) {
     console.error('궁합 분석 오류:', err)
     return NextResponse.json(

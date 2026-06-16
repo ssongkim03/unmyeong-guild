@@ -8,7 +8,6 @@ export async function POST(request: NextRequest) {
   try {
     const body: SajuFormData = await request.json()
 
-    // 입력값 검증
     if (!body.birthYear || !body.birthMonth || !body.birthDay || !body.gender) {
       return NextResponse.json(
         { error: '생년월일과 성별을 입력해주세요' },
@@ -16,10 +15,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 만세력 + AI로 사주 분석
+    // 만세력 + 지장간 + 십성 + AI 분석
     const analysis = await analyzeSaju(body)
 
-    // Supabase에 저장
     const supabase = createServerSupabaseClient()
     const { data, error } = await supabase
       .from('characters')
@@ -34,6 +32,8 @@ export async function POST(request: NextRequest) {
         character_class: analysis.characterClass,
         class_name_kr: analysis.classNameKr,
         personality: analysis.personality,
+        career: analysis.career,
+        love: analysis.love,
         stat_wood: analysis.stats.wood,
         stat_fire: analysis.stats.fire,
         stat_earth: analysis.stats.earth,
@@ -41,6 +41,13 @@ export async function POST(request: NextRequest) {
         stat_water: analysis.stats.water,
         share_code: analysis.shareCode,
         pillars: analysis.pillars,
+        day_pillar: analysis.dayPillar,
+        ten_god_dominant: analysis.tenGodDominant,
+        compatibility_data: {
+          dayStem: analysis.pillars.split(' ')[2]?.[0] ?? '',
+          dayBranch: analysis.pillars.split(' ')[2]?.[1] ?? '',
+          monthBranch: analysis.pillars.split(' ')[1]?.[1] ?? '',
+        },
       })
       .select()
       .single()
